@@ -1,8 +1,15 @@
 // This #include statement was automatically added by the Particle IDE.
 #include <NCD4Relay.h>
 
-/* Includes ------------------------------------------------------------------*/
+// This #include statement was automatically added by the Particle IDE.
 #include <NCD2Relay.h>
+
+/* Includes ------------------------------------------------------------------*/
+#include <application.h>
+#include <spark_wiring_i2c.h>
+
+// HCPA-5V-U3 I2C address is 0x28(40)
+#define Addr 0x28
 
 NCD2Relay relay2a;
 NCD2Relay relay2b;
@@ -36,27 +43,68 @@ int status1;
 int status2;
 int status4;
 
+double cTemp = 0.0;
+double fTemp = 0.0;
+double humidity = 0.0;
+
 /* This function is called once at start up ----------------------------------*/
 void setup()
 {
+	// Functions
 	Particle.function("relay2a", triggerRelay);
 	Particle.function("relay2b", triggerRelay1);
 	Particle.function("relay2c", triggerRelay2);
 	Particle.function("relay4a", triggerRelay4);
+	// Variables
 	Particle.variable("r2aStatus", status1);
 	Particle.variable("r2bStatus", status);
 	Particle.variable("r2cStatus", status2);
 	Particle.variable("r4aStatys", status4);
+	Particle.variable("i2cdevice", "HCPA-5V-U3");
+	Particle.variable("humidity", humidity);
+	Particle.variable("cTemp", cTemp);
+	Particle.variable("fTemp", fTemp);
+	// Starting
 	Serial.begin(115200);
+	Wire.begin();
+	// I2C Addresses
 	relay2a.setAddress(0,0,0);
 	relay2b.setAddress(1,0,0);
 	relay4a.setAddress(0,1,0);
 	relay2c.setAddress(0,0,1);
+	Wire.beginTransmission(Addr);
+	
+	Wire.write(0x80);
+	Wire.endTransmission();
+	delay(300);
+	
+	// End of Setup
 }
 
 /* This function loops forever --------------------------------------------*/
 void loop()
 {
+	// HCPA Temp sensor
+	unsigned int data[4];
+	Wire.beginTransmission(Addr);
+	Wire.endTransmission();
+	Wire.requestFrom(Addr, 4);
+	if (Wire.available() == 4)
+	{
+		data[0] = Wire.read();
+		data[1] = Wire.read();
+		data[2] = Wire.read();
+		data[3] = Wire.read();
+		
+		humidity = (((data[0] & 0x3F) * 256) + data[1]) / 16384.0 * 100.0;
+		cTemp = (((data[2] * 256) + (data[3] & 0xFC)) / 4) / 16384.0 * 165.0 - 40.0;
+		fTemp = (cTemp * 1.8) + 32;
+		
+		Particle.publish("Relative humidity : ", String(humidity));
+		Particle.publish("Temperature in Celsius : ", String(cTemp));
+		Particle.publish("Temperature in Fahrenheit : ", String(fTemp));
+	}
+	// Relay 2
 	int status = relay2b.readAllInputs();
 	int a = 0;
 	for(int i = 1; i < 33; i*=2){
@@ -91,6 +139,7 @@ void loop()
 		}
 		a++;
 	}
+	// Relay 1
 	int status1 = relay2a.readAllInputs();
 	int b = 0;
 	for(int i = 1; i < 33; i*=2){
@@ -125,6 +174,7 @@ void loop()
 		}
 		b++;
 	}
+	// Relay 4
 	int status4 = relay4a.readAllInputs();
 	int c = 0;
 	for(int i = 1; i < 33; i*=2){
@@ -159,6 +209,7 @@ void loop()
 		}
 		c++;
 	}
+	// Relay 3
 	int status2 = relay2c.readAllInputs();
 	int d = 0;
 	for(int i = 1; i < 33; i*=2){
@@ -193,9 +244,9 @@ void loop()
 		}
 		c++;
 	}
-
-
-
+	
+	
+	// End of Loop
 }
 
 int triggerRelay(String command){
@@ -400,6 +451,7 @@ int triggerRelay2(String command){
 	}
 	return 0;
 }
+
 
 
 
