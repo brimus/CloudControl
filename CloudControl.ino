@@ -9,7 +9,10 @@
 #include <spark_wiring_i2c.h>
 
 // HCPA-5V-U3 I2C address is 0x28(40)
-#define Addr 0x28
+#define HCPAddr 0x28
+// TCN75A I2C address is 0x48(72)
+#define TCNAddr 0x48
+
 
 NCD2Relay relay2a;
 NCD2Relay relay2b;
@@ -43,9 +46,13 @@ int status1;
 int status2;
 int status4;
 
-double cTemp = 0.0;
-double fTemp = 0.0;
+int ttemp = 0;
+
+double hcTemp = 0.0;
+double hfTemp = 0.0;
 double humidity = 0.0;
+double tcTemp = 0.0;
+double tfTemp = 0.0;
 
 /* This function is called once at start up ----------------------------------*/
 void setup()
@@ -60,10 +67,13 @@ void setup()
 	Particle.variable("r2bStatus", status);
 	Particle.variable("r2cStatus", status2);
 	Particle.variable("r4aStatys", status4);
-	Particle.variable("i2cdevice", "HCPA-5V-U3");
+	Particle.variable("Hi2cdevice", "HCPA-5V-U3");
 	Particle.variable("humidity", humidity);
-	Particle.variable("cTemp", cTemp);
-	Particle.variable("fTemp", fTemp);
+	Particle.variable("hcTemp", hcTemp);
+	Particle.variable("hfTemp", hfTemp);
+	Particle.variable("Ti2cdevice", "TCN75A");
+	Particle.variable("tcTemp", tcTemp);
+	Particle.variable("tfTemp", tfTemp);
 	// Starting
 	Serial.begin(115200);
 	Wire.begin();
@@ -72,12 +82,18 @@ void setup()
 	relay2b.setAddress(1,0,0);
 	relay4a.setAddress(0,1,0);
 	relay2c.setAddress(0,0,1);
-	Wire.beginTransmission(Addr);
-	
+
+	Wire.beginTransmission(HCPAddr);
 	Wire.write(0x80);
 	Wire.endTransmission();
-	delay(300);
-	
+	delay(100);
+
+	Wire.beginTransmission(TCNAddr);
+	Wire.write(0x01);
+	Wire.write(0x60);
+	Wire.endTransmission();
+	delay(100);
+
 	// End of Setup
 }
 
@@ -85,25 +101,46 @@ void setup()
 void loop()
 {
 	// HCPA Temp sensor
-	unsigned int data[4];
-	Wire.beginTransmission(Addr);
+	unsigned int hdata[4];
+	Wire.beginTransmission(HCPAddr);
 	Wire.endTransmission();
-	Wire.requestFrom(Addr, 4);
+	Wire.requestFrom(HCPAddr, 4);
 	if (Wire.available() == 4)
 	{
-		data[0] = Wire.read();
-		data[1] = Wire.read();
-		data[2] = Wire.read();
-		data[3] = Wire.read();
+		hdata[0] = Wire.read();
+		hdata[1] = Wire.read();
+		hdata[2] = Wire.read();
+		hdata[3] = Wire.read();
 		
-		humidity = (((data[0] & 0x3F) * 256) + data[1]) / 16384.0 * 100.0;
-		cTemp = (((data[2] * 256) + (data[3] & 0xFC)) / 4) / 16384.0 * 165.0 - 40.0;
-		fTemp = (cTemp * 1.8) + 32;
+		humidity = (((hdata[0] & 0x3F) * 256) + hdata[1]) / 16384.0 * 100.0;
+		hcTemp = (((hdata[2] * 256) + (hdata[3] & 0xFC)) / 4) / 16384.0 * 165.0 - 40.0;
+		hfTemp = (hcTemp * 1.8) + 32;
 		
-		Particle.publish("Relative humidity : ", String(humidity));
-		Particle.publish("Temperature in Celsius : ", String(cTemp));
-		Particle.publish("Temperature in Fahrenheit : ", String(fTemp));
+		Particle.publish("HCPA Relative humidity : ", String(humidity));
+		//Particle.publish("HCPA Temperature in Celsius : ", String(hcTemp));
+		Particle.publish("HCPA Temperature in Fahrenheit : ", String(hfTemp));
 	}
+	// TCN75A Temp sensor
+	unsigned int tdata[2];
+	Wire.beginTransmission(TCNAddr);
+	Wire.write(0x00);
+	Wire.endTransmission();
+	Wire.requestFrom(TCNAddr, 2);
+	if (Wire.available() == 2)
+	{
+	    tdata[0] = Wire.read();
+	    tdata[1] = Wire.read();
+	}
+	ttemp = (((tdata[0] * 256) + (tdata[1] & 0xF0)) / 16);
+	if(ttemp > 2047)
+	{
+	    ttemp -= 4096;	
+	}
+	tcTemp = ttemp * 0.0625;
+	tfTemp = (tcTemp * 1.8) + 32;
+	//Particle.publish("TCN75A Temperature in Celsius : ", String(tcTemp));
+	Particle.publish("TCN75A Temperature in Fahrenheit : ", String(tfTemp));
+	
 	// Relay 2
 	int status = relay2b.readAllInputs();
 	int a = 0;
