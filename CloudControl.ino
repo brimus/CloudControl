@@ -47,6 +47,7 @@ int status2;
 int status4;
 
 int ttemp = 0;
+int count = 0;
 
 double hcTemp = 0.0;
 double hfTemp = 0.0;
@@ -54,9 +55,12 @@ double humidity = 0.0;
 double tcTemp = 0.0;
 double tfTemp = 0.0;
 
+String version = "1.0.7";
+
 /* This function is called once at start up ----------------------------------*/
 void setup()
 {
+    //Particle.process();
 	// Functions
 	Particle.function("relay2a", triggerRelay);
 	Particle.function("relay2b", triggerRelay1);
@@ -74,6 +78,11 @@ void setup()
 	Particle.variable("Ti2cdevice", "TCN75A");
 	Particle.variable("tcTemp", tcTemp);
 	Particle.variable("tfTemp", tfTemp);
+	Particle.variable("Count", count);
+	Particle.variable("Version", version);
+	//Particle.variable("Cell IP", Cellular.localIP());
+	//Particle.variable("WIFI IP", WiFi.localIP());
+	//Particle.variable("WIFI IP", WiFi.gatewayIP());
 	// Starting
 	Serial.begin(115200);
 	Wire.begin();
@@ -94,12 +103,15 @@ void setup()
 	Wire.endTransmission();
 	delay(100);
 
+    //Serial.println(WiFi.localIP());
+    //Serial.println(Cellular.localIP());
 	// End of Setup
 }
 
 /* This function loops forever --------------------------------------------*/
 void loop()
 {
+    
 	// HCPA Temp sensor
 	unsigned int hdata[4];
 	Wire.beginTransmission(HCPAddr);
@@ -116,9 +128,18 @@ void loop()
 		hcTemp = (((hdata[2] * 256) + (hdata[3] & 0xFC)) / 4) / 16384.0 * 165.0 - 40.0;
 		hfTemp = (hcTemp * 1.8) + 32;
 		
-		Particle.publish("HCPA Relative humidity : ", String(humidity));
-		//Particle.publish("HCPA Temperature in Celsius : ", String(hcTemp));
-		Particle.publish("HCPA Temperature in Fahrenheit : ", String(hfTemp));
+		if (count = 0)
+		{
+		    Particle.publish("HCPA Relative humidity : ", String(humidity));
+		    Particle.publish("HCPA Temperature in Fahrenheit : ", String(hfTemp));
+		    //Particle.publish("HCPA Temperature in Celsius : ", String(hcTemp));
+		}
+		if (hfTemp > 80)
+		{
+		    triggerRelay("turnonallrelays");
+		}else{
+		    triggerRelay("turnoffallrelays");
+		}
 	}
 	// TCN75A Temp sensor
 	unsigned int tdata[2];
@@ -130,17 +151,26 @@ void loop()
 	{
 	    tdata[0] = Wire.read();
 	    tdata[1] = Wire.read();
-	}
-	ttemp = (((tdata[0] * 256) + (tdata[1] & 0xF0)) / 16);
-	if(ttemp > 2047)
-	{
-	    ttemp -= 4096;	
-	}
-	tcTemp = ttemp * 0.0625;
-	tfTemp = (tcTemp * 1.8) + 32;
-	//Particle.publish("TCN75A Temperature in Celsius : ", String(tcTemp));
-	Particle.publish("TCN75A Temperature in Fahrenheit : ", String(tfTemp));
-	
+	    ttemp = (((tdata[0] * 256) + (tdata[1] & 0xF0)) / 16);
+	    if(ttemp > 2047)
+	    {
+	        ttemp -= 4096;	
+	    }
+	    tcTemp = ttemp * 0.0625;
+	    tfTemp = (tcTemp * 1.8) + 32;
+	    if (count = 0)
+	    {
+	        //Particle.publish("TCN75A Temperature in Celsius : ", String(tcTemp));
+	        Particle.publish("TCN75A Temperature in Fahrenheit : ", String(tfTemp));
+	    }
+		if (tfTemp > 80)
+		{
+		    triggerRelay1("turnonallrelays");
+		}else{
+		    triggerRelay1("turnoffallrelays");
+		}
+
+    }
 	// Relay 2
 	int status = relay2b.readAllInputs();
 	int a = 0;
@@ -154,10 +184,10 @@ void loop()
 					String eventName = "Input_";
 					eventName+=(a+1);
 					Particle.publish(eventName, "ON");
-					Serial.print("eventName: ");
-					Serial.println(eventName);
-					Serial.print("eventContents: ");
-					Serial.println("ON");
+					//Serial.print("eventName: ");
+					//Serial.println(eventName);
+					//Serial.print("eventContents: ");
+					//Serial.println("ON");
 				}
 			}
 		}else{
@@ -168,10 +198,10 @@ void loop()
 				String eventName = "Input_";
 				eventName+=(a+1);
 				Particle.publish(eventName, "OFF");
-				Serial.print("eventName: ");
-				Serial.println(eventName);
-				Serial.print("eventContents: ");
-				Serial.println("OFF");
+				//Serial.print("eventName: ");
+				//Serial.println(eventName);
+				//Serial.print("eventContents: ");
+				//Serial.println("OFF");
 			}
 		}
 		a++;
@@ -189,10 +219,10 @@ void loop()
 					String eventName = "Input1_";
 					eventName+=(b+1);
 					Particle.publish(eventName, "ON");
-					Serial.print("eventName: ");
-					Serial.println(eventName);
-					Serial.print("eventContents: ");
-					Serial.println("ON");
+					//Serial.print("eventName: ");
+					//Serial.println(eventName);
+					//Serial.print("eventContents: ");
+					//Serial.println("ON");
 				}
 			}
 		}else{
@@ -203,10 +233,10 @@ void loop()
 				String eventName = "Input1_";
 				eventName+=(b+1);
 				Particle.publish(eventName, "OFF");
-				Serial.print("eventName: ");
-				Serial.println(eventName);
-				Serial.print("eventContents: ");
-				Serial.println("OFF");
+				//Serial.print("eventName: ");
+				//Serial.println(eventName);
+				//Serial.print("eventContents: ");
+				//Serial.println("OFF");
 			}
 		}
 		b++;
@@ -224,10 +254,10 @@ void loop()
 					String eventName = "Input4_";
 					eventName+=(c+1);
 					Particle.publish(eventName, "ON");
-					Serial.print("eventName: ");
-					Serial.println(eventName);
-					Serial.print("eventContents: ");
-					Serial.println("ON");
+					//Serial.print("eventName: ");
+					//Serial.println(eventName);
+					//Serial.print("eventContents: ");
+					//Serial.println("ON");
 				}
 			}
 		}else{
@@ -238,10 +268,10 @@ void loop()
 				String eventName = "Input4_";
 				eventName+=(c+1);
 				Particle.publish(eventName, "OFF");
-				Serial.print("eventName: ");
-				Serial.println(eventName);
-				Serial.print("eventContents: ");
-				Serial.println("OFF");
+				//Serial.print("eventName: ");
+				//Serial.println(eventName);
+				//Serial.print("eventContents: ");
+				//Serial.println("OFF");
 			}
 		}
 		c++;
@@ -259,10 +289,10 @@ void loop()
 					String eventName = "Input2_";
 					eventName+=(d+1);
 					Particle.publish(eventName, "ON");
-					Serial.print("eventName: ");
-					Serial.println(eventName);
-					Serial.print("eventContents: ");
-					Serial.println("ON");
+					//Serial.print("eventName: ");
+					//Serial.println(eventName);
+					//Serial.print("eventContents: ");
+					//Serial.println("ON");
 				}
 			}
 		}else{
@@ -273,16 +303,20 @@ void loop()
 				String eventName = "Input2_";
 				eventName+=(d+1);
 				Particle.publish(eventName, "OFF");
-				Serial.print("eventName: ");
-				Serial.println(eventName);
-				Serial.print("eventContents: ");
-				Serial.println("OFF");
+				//Serial.print("eventName: ");
+				//Serial.println(eventName);
+				//Serial.print("eventContents: ");
+				//Serial.println("OFF");
 			}
 		}
 		c++;
 	}
-	
-	
+	count++;
+	if (count > 300)
+	{
+	    count = 0;
+	}
+	delay(300);
 	// End of Loop
 }
 
@@ -300,24 +334,24 @@ int triggerRelay(String command){
 		if(status < 0 || status > 255){
 			return 0;
 		}
-		Serial.print("Setting bank status to: ");
-		Serial.println(status);
+		//Serial.print("Setting bank status to: ");
+		//Serial.println(status);
 		relay2a.setBankStatus(status);
-		Serial.println("done");
+		//Serial.println("done");
 		return 1;
 	}
 	//Relay Specific Command
 	int relayNumber = command.substring(0,1).toInt();
-	Serial.print("relayNumber: ");
-	Serial.println(relayNumber);
+	//Serial.print("relayNumber: ");
+	//Serial.println(relayNumber);
 	String relayCommand = command.substring(1);
-	Serial.print("relayCommand:");
-	Serial.print(relayCommand);
-	Serial.println(".");
+	//Serial.print("relayCommand:");
+	//Serial.print(relayCommand);
+	//Serial.println(".");
 	if(relayCommand.equalsIgnoreCase("on")){
-		Serial.println("Turning on relay");
+		//Serial.println("Turning on relay");
 		relay2a.turnOnRelay(relayNumber);
-		Serial.println("returning");
+		//Serial.println("returning");
 		return 1;
 	}
 	if(relayCommand.equalsIgnoreCase("off")){
@@ -350,24 +384,24 @@ int triggerRelay1(String command){
 		if(status1 < 0 || status1 > 255){
 			return 0;
 		}
-		Serial.print("Setting bank status to: ");
-		Serial.println(status1);
+		//Serial.print("Setting bank status to: ");
+		//Serial.println(status1);
 		relay2b.setBankStatus(status1);
-		Serial.println("done");
+		//Serial.println("done");
 		return 1;
 	}
 	//Relay Specific Command
 	int relayNumber = command.substring(0,1).toInt();
-	Serial.print("relayNumber: ");
-	Serial.println(relayNumber);
+	//Serial.print("relayNumber: ");
+	//Serial.println(relayNumber);
 	String relayCommand = command.substring(1);
-	Serial.print("relayCommand:");
-	Serial.print(relayCommand);
-	Serial.println(".");
+	//Serial.print("relayCommand:");
+	//Serial.print(relayCommand);
+	//Serial.println(".");
 	if(relayCommand.equalsIgnoreCase("on")){
-		Serial.println("Turning on relay");
+		//Serial.println("Turning on relay");
 		relay2b.turnOnRelay(relayNumber);
-		Serial.println("returning");
+		//Serial.println("returning");
 		return 1;
 	}
 	if(relayCommand.equalsIgnoreCase("off")){
@@ -401,24 +435,24 @@ int triggerRelay4(String command){
 		if(status4 < 0 || status4 > 255){
 			return 0;
 		}
-		Serial.print("Setting bank status to: ");
-		Serial.println(status4);
+		//Serial.print("Setting bank status to: ");
+		//Serial.println(status4);
 		relay4a.setBankStatus(status4);
-		Serial.println("done");
+		//Serial.println("done");
 		return 1;
 	}
 	//Relay Specific Command
 	int relayNumber = command.substring(0,1).toInt();
-	Serial.print("relayNumber: ");
-	Serial.println(relayNumber);
+	//Serial.print("relayNumber: ");
+	//Serial.println(relayNumber);
 	String relayCommand = command.substring(1);
-	Serial.print("relayCommand:");
-	Serial.print(relayCommand);
-	Serial.println(".");
+	//Serial.print("relayCommand:");
+	//Serial.print(relayCommand);
+	//Serial.println(".");
 	if(relayCommand.equalsIgnoreCase("on")){
-		Serial.println("Turning on relay");
+		//Serial.println("Turning on relay");
 		relay4a.turnOnRelay(relayNumber);
-		Serial.println("returning");
+		//Serial.println("returning");
 		return 1;
 	}
 	if(relayCommand.equalsIgnoreCase("off")){
@@ -452,24 +486,24 @@ int triggerRelay2(String command){
 		if(status2 < 0 || status2 > 255){
 			return 0;
 		}
-		Serial.print("Setting bank status to: ");
-		Serial.println(status2);
+		//Serial.print("Setting bank status to: ");
+		//Serial.println(status2);
 		relay2b.setBankStatus(status2);
-		Serial.println("done");
+		//Serial.println("done");
 		return 1;
 	}
 	//Relay Specific Command
 	int relayNumber = command.substring(0,1).toInt();
-	Serial.print("relayNumber: ");
-	Serial.println(relayNumber);
+	//Serial.print("relayNumber: ");
+	//Serial.println(relayNumber);
 	String relayCommand = command.substring(1);
-	Serial.print("relayCommand:");
-	Serial.print(relayCommand);
-	Serial.println(".");
+	//Serial.print("relayCommand:");
+	//Serial.print(relayCommand);
+	//Serial.println(".");
 	if(relayCommand.equalsIgnoreCase("on")){
-		Serial.println("Turning on relay");
+		//Serial.println("Turning on relay");
 		relay2c.turnOnRelay(relayNumber);
-		Serial.println("returning");
+		//Serial.println("returning");
 		return 1;
 	}
 	if(relayCommand.equalsIgnoreCase("off")){
