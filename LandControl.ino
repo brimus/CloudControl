@@ -103,8 +103,6 @@ void setup()
 	Wire.endTransmission();
 	delay(100);
 
-    //Serial.println(WiFi.localIP());
-    //Serial.println(Cellular.localIP());
 	// End of Setup
 }
 
@@ -184,10 +182,6 @@ void loop()
 					String eventName = "Input_";
 					eventName+=(a+1);
 					Particle.publish(eventName, "ON");
-					//Serial.print("eventName: ");
-					//Serial.println(eventName);
-					//Serial.print("eventContents: ");
-					//Serial.println("ON");
 				}
 			}
 		}else{
@@ -198,10 +192,6 @@ void loop()
 				String eventName = "Input_";
 				eventName+=(a+1);
 				Particle.publish(eventName, "OFF");
-				//Serial.print("eventName: ");
-				//Serial.println(eventName);
-				//Serial.print("eventContents: ");
-				//Serial.println("OFF");
 			}
 		}
 		a++;
@@ -219,10 +209,6 @@ void loop()
 					String eventName = "Input1_";
 					eventName+=(b+1);
 					Particle.publish(eventName, "ON");
-					//Serial.print("eventName: ");
-					//Serial.println(eventName);
-					//Serial.print("eventContents: ");
-					//Serial.println("ON");
 				}
 			}
 		}else{
@@ -233,10 +219,6 @@ void loop()
 				String eventName = "Input1_";
 				eventName+=(b+1);
 				Particle.publish(eventName, "OFF");
-				//Serial.print("eventName: ");
-				//Serial.println(eventName);
-				//Serial.print("eventContents: ");
-				//Serial.println("OFF");
 			}
 		}
 		b++;
@@ -254,10 +236,6 @@ void loop()
 					String eventName = "Input4_";
 					eventName+=(c+1);
 					Particle.publish(eventName, "ON");
-					//Serial.print("eventName: ");
-					//Serial.println(eventName);
-					//Serial.print("eventContents: ");
-					//Serial.println("ON");
 				}
 			}
 		}else{
@@ -268,10 +246,6 @@ void loop()
 				String eventName = "Input4_";
 				eventName+=(c+1);
 				Particle.publish(eventName, "OFF");
-				//Serial.print("eventName: ");
-				//Serial.println(eventName);
-				//Serial.print("eventContents: ");
-				//Serial.println("OFF");
 			}
 		}
 		c++;
@@ -289,10 +263,6 @@ void loop()
 					String eventName = "Input2_";
 					eventName+=(d+1);
 					Particle.publish(eventName, "ON");
-					//Serial.print("eventName: ");
-					//Serial.println(eventName);
-					//Serial.print("eventContents: ");
-					//Serial.println("ON");
 				}
 			}
 		}else{
@@ -303,10 +273,6 @@ void loop()
 				String eventName = "Input2_";
 				eventName+=(d+1);
 				Particle.publish(eventName, "OFF");
-				//Serial.print("eventName: ");
-				//Serial.println(eventName);
-				//Serial.print("eventContents: ");
-				//Serial.println("OFF");
 			}
 		}
 		c++;
@@ -334,24 +300,14 @@ int triggerRelay(String command){
 		if(status < 0 || status > 255){
 			return 0;
 		}
-		//Serial.print("Setting bank status to: ");
-		//Serial.println(status);
 		relay2a.setBankStatus(status);
-		//Serial.println("done");
 		return 1;
 	}
 	//Relay Specific Command
 	int relayNumber = command.substring(0,1).toInt();
-	//Serial.print("relayNumber: ");
-	//Serial.println(relayNumber);
 	String relayCommand = command.substring(1);
-	//Serial.print("relayCommand:");
-	//Serial.print(relayCommand);
-	//Serial.println(".");
 	if(relayCommand.equalsIgnoreCase("on")){
-		//Serial.println("Turning on relay");
 		relay2a.turnOnRelay(relayNumber);
-		//Serial.println("returning");
 		return 1;
 	}
 	if(relayCommand.equalsIgnoreCase("off")){
@@ -384,24 +340,14 @@ int triggerRelay1(String command){
 		if(status1 < 0 || status1 > 255){
 			return 0;
 		}
-		//Serial.print("Setting bank status to: ");
-		//Serial.println(status1);
 		relay2b.setBankStatus(status1);
-		//Serial.println("done");
 		return 1;
 	}
 	//Relay Specific Command
 	int relayNumber = command.substring(0,1).toInt();
-	//Serial.print("relayNumber: ");
-	//Serial.println(relayNumber);
 	String relayCommand = command.substring(1);
-	//Serial.print("relayCommand:");
-	//Serial.print(relayCommand);
-	//Serial.println(".");
 	if(relayCommand.equalsIgnoreCase("on")){
-		//Serial.println("Turning on relay");
 		relay2b.turnOnRelay(relayNumber);
-		//Serial.println("returning");
 		return 1;
 	}
 	if(relayCommand.equalsIgnoreCase("off")){
@@ -435,24 +381,14 @@ int triggerRelay4(String command){
 		if(status4 < 0 || status4 > 255){
 			return 0;
 		}
-		//Serial.print("Setting bank status to: ");
-		//Serial.println(status4);
 		relay4a.setBankStatus(status4);
-		//Serial.println("done");
 		return 1;
 	}
 	//Relay Specific Command
 	int relayNumber = command.substring(0,1).toInt();
-	//Serial.print("relayNumber: ");
-	//Serial.println(relayNumber);
 	String relayCommand = command.substring(1);
-	//Serial.print("relayCommand:");
-	//Serial.print(relayCommand);
-	//Serial.println(".");
 	if(relayCommand.equalsIgnoreCase("on")){
-		//Serial.println("Turning on relay");
 		relay4a.turnOnRelay(relayNumber);
-		//Serial.println("returning");
 		return 1;
 	}
 	if(relayCommand.equalsIgnoreCase("off")){
@@ -486,24 +422,14 @@ int triggerRelay2(String command){
 		if(status2 < 0 || status2 > 255){
 			return 0;
 		}
-		//Serial.print("Setting bank status to: ");
-		//Serial.println(status2);
 		relay2b.setBankStatus(status2);
-		//Serial.println("done");
 		return 1;
 	}
 	//Relay Specific Command
 	int relayNumber = command.substring(0,1).toInt();
-	//Serial.print("relayNumber: ");
-	//Serial.println(relayNumber);
 	String relayCommand = command.substring(1);
-	//Serial.print("relayCommand:");
-	//Serial.print(relayCommand);
-	//Serial.println(".");
 	if(relayCommand.equalsIgnoreCase("on")){
-		//Serial.println("Turning on relay");
 		relay2c.turnOnRelay(relayNumber);
-		//Serial.println("returning");
 		return 1;
 	}
 	if(relayCommand.equalsIgnoreCase("off")){
