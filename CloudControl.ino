@@ -523,9 +523,3 @@ int triggerRelay2(String command){
 	return 0;
 }
 
-
-
-
-
-
-
