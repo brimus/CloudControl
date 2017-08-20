@@ -1,11 +1,14 @@
 # LandControl
 
 This is mainly for the Particle Electron but can also be used on a Particle Photon.
+
 Have not triled this on any other device.
 
 This is for controlling the power and a remote location with only cellular connectivity.
 
 This contains the following ControlEverything devices
+
+
 
 2 @ PR16-17-30A Electron interface 2 relay 30A  Address (0,0,0) (0,0,1)
 
