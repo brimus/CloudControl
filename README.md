@@ -17,7 +17,7 @@ PR16-17-30A Address (0,0,0) contains a I2C input (is the end I2C in only)</br>
 PR8-15-30   Address (1,0,0) is in the middle (I2C in and out)</br>
 PR8-14-20   Address (0,1,0) is in the middle (I2C in and out)</br>
 PR2-25      Only 1 address, is in the middle (I2C in and out)</br>
-PR2-12      Address (0,0,0) is in the middle (I2C in and out)</br></br></br>
+PR2-12      Address (0,0,0) is in the middle (I2C in and out)</br></br>
 
 <b>Variables -</b></br>
 
@@ -29,9 +29,9 @@ hfTemp</br>
 tcTemp</br>
 tfTemp</br>
 Count</br>
-Version</br></br></br>
+Version</br></br>
 
-<b>Functions --</b></br></br>
+<b>Functions --</b></br>
 
 r2aStatus   Controls PR16-17-30A Address (0,0,0)</br>
 r2bStatus   Controls PR8-15-30   Address (1,0,0)</br>
