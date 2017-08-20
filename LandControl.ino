@@ -55,7 +55,7 @@ double humidity = 0.0;
 double tcTemp = 0.0;
 double tfTemp = 0.0;
 
-String version = "1.0.7";
+String version = "1.0.8";
 
 /* This function is called once at start up ----------------------------------*/
 void setup()
